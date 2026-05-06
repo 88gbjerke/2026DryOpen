@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  FILE: dry-open.html
+  PURPOSE: Page 1 — The event information / "flyer" page.
+           This is the page your QR code will point to.
+           It links to dry-open-entry.html for registration.
+  ============================================================
+
+  HOW HTML FILES WORK (quick primer for C#/VBA folks):
+  ─────────────────────────────────────────────────────
+  An HTML file has three main zones:
+    1. <!DOCTYPE html>  — Tells the browser "this is modern HTML5"
+    2. <head>           — Invisible setup: title, fonts, CSS styles
+    3. <body>           — Everything the user actually SEES
+
+  Tags work like brackets: <tagname> opens, </tagname> closes.
+  Example: <p>Hello world</p>  =  a paragraph containing "Hello world"
+
+  CSS (the styling language) lives inside <style> tags.
+  A CSS rule looks like:
+      .my-class {
+          color: red;
+          font-size: 16px;
+      }
+  The dot means "class". In HTML you apply it with: class="my-class"
+  Think of classes like named styles in Word or Excel cell formats.
+
+  CSS VARIABLES work like constants in C#:
+      --navy: #0d1f35;        ← define it once at the top
+      color: var(--navy);     ← use it anywhere
+  Change the variable once and it updates everywhere.
+
+  COLOR VALUES are written as hex codes like #0d1f35
+  (red=#ff0000, green=#00ff00, blue=#0000ff, white=#ffffff, black=#000000)
+  Or as rgba(red, green, blue, alpha) where alpha: 0=transparent, 1=opaque.
+-->
+<html lang="en">
+
+
+<!-- ============================================================
+     HEAD SECTION
+     Everything here is invisible to the user but sets up the
+     page's title, character encoding, mobile behavior, and all
+     the visual styling (CSS).
+     ============================================================ -->
+<head>
+
+  <!-- UTF-8 encoding allows special characters like © ® — etc. -->
+  <meta charset="UTF-8" />
+
+  <!-- VIEWPORT META TAG — Critical for phones/tablets.
+       Without this, phones zoom way out and show a tiny page.
+         width=device-width  = use the phone's actual screen width
+         initial-scale=1.0   = don't zoom in or out by default
+       NEVER remove this tag if you want the site to work on phones. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- PAGE TITLE: Shows in the browser tab and in Google search results.
+       TO CHANGE: edit the text between the <title> tags. -->
+  <title>Dry Open Golf Event — August 7, 2026</title>
+
+  <!-- GOOGLE FONTS: Loads three free custom fonts from Google's servers.
+       - Bebas Neue:       Big, bold, condensed — used for "DRY OPEN"
+       - Barlow:           Clean body text (weights 300=light to 700=bold)
+       - Barlow Condensed: Narrow version of Barlow for labels/headers
+       TO USE DIFFERENT FONTS: visit fonts.google.com, pick fonts,
+       click "Get embed code", and replace the URL below. -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet" />
+
+
+  <!-- ============================================================
+       CSS STYLES — All visual styling lives between these tags.
+       Organized top-to-bottom in the same order elements appear
+       on the page. Each section is clearly labeled.
+       ============================================================ -->
+  <style>
+
+    /* ── UNIVERSAL RESET ────────────────────────────────────────
+       Browsers add their own default padding/margin to elements,
+       which causes inconsistent spacing across Chrome, Firefox, etc.
+       This zeroes them all out so we start from a clean slate.
+
+       box-sizing: border-box is important:
+         DEFAULT behavior:  width:200px + padding:20px = 220px total
+         border-box:        width:200px INCLUDING padding = 200px total
+       border-box is much more intuitive — similar to how cell widths
+       work in Excel. We apply it to every element (*). */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ── CSS VARIABLES (Master Color & Design Palette) ──────────
+       Defined on :root so they're available to the entire page.
+       THIS IS YOUR MAIN CUSTOMIZATION AREA for colors.
+       Change any hex value here and it updates everywhere.
+
+       TO FIND A HEX COLOR: search "color picker" in Google,
+       pick a color, and copy the hex code (e.g. #ff6600).
+
+       --navy:       Dark navy blue — main header/footer background
+       --navy-mid:   Slightly lighter navy — used in team notice box
+       --blue:       Medium blue — schedule bar background
+       --sky:        Bright sky blue — links and focus highlights
+       --gold:       Warm gold/amber — primary accent color
+       --gold-light: Lighter gold — hover states, highlighted text
+       --white:      Pure white — card backgrounds
+       --off-white:  Very light gray-white — page background
+       --text:       Near-black — main body text
+       --muted:      Medium gray — secondary/supporting text       */
+    :root {
+      --navy:       #0d1f35;
+      --navy-mid:   #162d4a;
+      --blue:       #1a4a7a;
+      --sky:        #2e7ec4;
+      --gold:       #e8a020;
+      --gold-light: #f5c050;
+      --white:      #ffffff;
+      --off-white:  #f4f6f9;
+      --text:       #1a1a2e;
+      --muted:      #4a5568;
+    }
+
+    /* ── BODY (whole page) ──────────────────────────────────────
+       Styles applied to the entire visible page.
+         font-family: lists fonts in priority order — if 'Barlow'
+           fails to load, the browser falls back to sans-serif.
+         background: the page background color (light gray-white)
+         color: the default text color — individual elements can
+           override this with their own color rule
+         min-height: 100vh ensures the body fills at least the
+           full screen height (vh = viewport height, 100vh = 100%) */
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: var(--off-white);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+
+    /* ════════════════════════════════════════════════════════════
+       HEADER — The dark navy banner at the very top.
+       Contains golf ball icons, badge, title, subtitle, deadline.
+       ════════════════════════════════════════════════════════════ */
+
+    .header {
+      background: var(--navy);
+      /* padding: top right/left bottom — rem is a unit ≈ 16px each
+         So 2.5rem ≈ 40px top, 1.5rem ≈ 24px sides, 2rem ≈ 32px bottom */
+      padding: 2.5rem 1.5rem 2rem;
+      text-align: center;
+      position: relative;  /* required for the decorative ::after line below */
+      overflow: hidden;    /* clips decorative elements that extend beyond edges */
+    }
+
+    /* The gold shimmer line at the very bottom of the header.
+       This is a CSS "pseudo-element" — a decorative element drawn
+       by CSS without any HTML tag needed. ::after = after the content.
+       TO REMOVE THIS LINE: delete this entire .header::after block.
+       TO CHANGE LINE COLOR: edit the colors in the gradient. */
+    .header::after {
+      content: '';          /* required for pseudo-elements (can be blank) */
+      position: absolute;   /* positioned relative to .header */
+      bottom: 0;            /* flush to the bottom of the header */
+      left: 0;
+      right: 0;
+      height: 4px;          /* thickness of the line — increase for thicker */
+      /* linear-gradient(direction, color1, color2, ...) fades between colors.
+         90deg = left to right. This fades: transparent → gold → light gold → gold → transparent
+         creating a "shimmer" that softly fades at both edges. */
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+    }
+
+    /* Faint decorative circle in the top-right corner of the header.
+       Purely visual — delete .header::before to remove it entirely. */
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 220px; height: 220px;
+      border-radius: 50%;  /* 50% = perfect circle */
+      border: 40px solid rgba(46,126,196,0.08); /* very faint blue ring */
+      pointer-events: none; /* won't accidentally block mouse clicks */
+    }
+
+
+    /* ── GOLF BALL ICONS ────────────────────────────────────────
+       Three decorative golf balls drawn entirely with CSS — no images.
+       TO REMOVE THEM: delete .golf-balls and .golf-ball CSS blocks,
+       AND delete the <div class="golf-balls"> block in the HTML body. */
+
+    /* Flex container — arranges the three balls in a horizontal row */
+    .golf-balls {
+      display: flex;           /* flex = horizontal row by default */
+      justify-content: center; /* centers the row horizontally */
+      align-items: center;     /* vertically aligns items in the row */
+      gap: 1rem;               /* space between each ball */
+      margin-bottom: 1rem;     /* space below before the badge */
+    }
+
+    /* Each ball — a CSS circle with a 3D sphere gradient */
+    .golf-ball {
+      width: 38px;
+      height: 38px;
+      /* radial-gradient creates the sphere effect:
+         white highlight at top-left → light gray → dark gray at edge */
+      background: radial-gradient(circle at 35% 35%, #fff 0%, #dde 60%, #aab 100%);
+      border-radius: 50%;  /* makes the square div into a circle */
+      /* inset box-shadow adds depth on the inside, reinforcing the 3D look */
+      box-shadow: inset -3px -3px 6px rgba(0,0,0,0.25);
+      position: relative;  /* needed so the ::after dimple sits inside it */
+    }
+
+    /* Simulated dimple pattern on the ball surface */
+    .golf-ball::after {
+      content: '';
+      position: absolute;
+      top: 30%; left: 20%;
+      width: 60%; height: 40%;
+      border-radius: 50%;
+      /* repeating-linear-gradient creates faint horizontal stripes
+         that mimic the look of golf ball dimples */
+      background: repeating-linear-gradient(
+        0deg,
+        transparent, transparent 3px,
+        rgba(150,160,180,0.3) 3px, rgba(150,160,180,0.3) 4px
+      );
+    }
+
+
+    /* ── EVENT BADGE ("ANNUAL CHARITY GOLF TOURNAMENT") ─────────
+       The small gold pill/badge above the main title.
+       TO CHANGE THE BADGE TEXT: find it in the HTML body below.
+       TO CHANGE COLOR: edit background and color properties here. */
+    .event-tag {
+      display: inline-block; /* shrinks to fit its text rather than full width */
+      background: var(--gold);
+      color: var(--navy);    /* dark text on gold background for contrast */
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.18em; /* spread letters apart — creates a "label" look */
+      text-transform: uppercase; /* forces ALL CAPS no matter how you type it */
+      padding: 0.3rem 1rem;
+      border-radius: 2px;    /* very slight corner rounding */
+      margin-bottom: 1rem;   /* space below before the h1 title */
+    }
+
+
+    /* ── MAIN TITLE "DRY OPEN GOLF EVENT" ──────────────────────
+       Uses Bebas Neue — the big blocky display font.
+       clamp(min, preferred, max) makes font size responsive:
+         clamp(3rem, 10vw, 5.5rem) means:
+           never smaller than 3rem (≈48px)
+           tries to be 10% of the viewport (screen) width
+           never larger than 5.5rem (≈88px)
+         Result: big on desktop, smaller but readable on phones. */
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 10vw, 5.5rem);
+      color: var(--white);
+      letter-spacing: 0.04em;
+      line-height: 0.95; /* slightly tighter than default so the two
+                            lines "DRY OPEN" and "GOLF EVENT" sit close */
+      margin-bottom: 0.5rem;
+    }
+
+    /* The word "OPEN" is wrapped in <span> in the HTML so this
+       rule can color just that single word gold */
+    h1 span { color: var(--gold); }
+
+
+    /* ── SUBTITLE BELOW THE TITLE ───────────────────────────────
+       "18-hole 4-person Scramble · Hawley Golf Club"
+       TO CHANGE: find class="subhead" in the HTML body. */
+    .subhead {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(1rem, 3vw, 1.35rem); /* responsive size */
+      font-weight: 400;
+      color: rgba(255,255,255,0.7); /* white at 70% opacity = soft white */
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 1.75rem;
+    }
+
+
+    /* ── DEADLINE WARNING BOX ───────────────────────────────────
+       Gold-bordered box: "Payment must be received before..."
+       TO CHANGE TEXT: find class="deadline-banner" in the HTML. */
+    .deadline-banner {
+      display: inline-block;
+      border: 2px solid var(--gold);
+      color: var(--gold-light);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.6rem 1.5rem;
+      border-radius: 3px;
+    }
+
+
+    /* ════════════════════════════════════════════════════════════
+       SCHEDULE STRIP — Medium-blue bar with the day's timeline.
+       "Friday, August 7 | 11:45–12:30 Check In | 12:30 Shotgun..."
+       TO CHANGE BACKGROUND: edit background in .schedule-strip.
+       TO CHANGE TIMES: find class="schedule-strip" in the HTML.
+       ════════════════════════════════════════════════════════════ */
+    .schedule-strip {
+      background: var(--blue);
+      padding: 1.25rem 1.5rem;
+      text-align: center;
+    }
+
+    .schedule-strip p {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(1rem, 3vw, 1.25rem);
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      line-height: 1.6; /* space between the two schedule lines */
+    }
+
+    /* Time values inside the strip are wrapped in <span> tags
+       so this rule can color just the times gold */
+    .schedule-strip p span { color: var(--gold-light); }
+
+
+    /* ════════════════════════════════════════════════════════════
+       MAIN CONTENT WRAPPER
+       The container that holds all the cards and boxes below
+       the header. Centers content and limits max width.
+         max-width: page won't stretch wider than 820px on big screens
+         margin: 0 auto: 0 top/bottom, auto left/right = centered
+         padding: breathing room inside the edges
+       ════════════════════════════════════════════════════════════ */
+    .main {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem; /* top / left-right / bottom */
+    }
+
+
+    /* ════════════════════════════════════════════════════════════
+       PRICING CARDS GRID — Four registration price boxes.
+       Uses CSS Grid for automatic responsive layout.
+       ════════════════════════════════════════════════════════════ */
+
+    /* Grid container */
+    .pricing-grid {
+      display: grid;
+      /* repeat(auto-fit, minmax(170px, 1fr)) means:
+           auto-fit = fit as many columns as possible
+           minmax(170px, 1fr) = each column is min 170px, max = equal share
+         On a wide screen: 4 columns side-by-side.
+         On a phone: 2 columns or 1 column.
+         This is the standard "responsive card grid" pattern in CSS. */
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;         /* space between cards */
+      margin-bottom: 1.5rem;
+    }
+
+    /* Individual card */
+    .price-card {
+      background: var(--white);
+      border: 1px solid #d0d8e4; /* light gray-blue border */
+      border-radius: 8px;
+      padding: 1.1rem 1rem;
+      text-align: center;
+      /* transition animates changes smoothly when the user hovers.
+         0.2s = animation takes 0.2 seconds.
+         Only border-color and box-shadow animate (not all properties). */
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    /* When the user's mouse hovers over a card:
+       border turns blue, soft shadow appears for a "lifted" effect */
+    .price-card:hover {
+      border-color: var(--sky);
+      /* box-shadow: x-offset y-offset blur spread color
+         0 4px 16px 0 (implied) rgba(...)
+         positive y-offset = shadow goes downward */
+      box-shadow: 0 4px 16px rgba(30,80,140,0.1);
+    }
+
+    /* The large dollar amount (e.g. "$90") */
+    .price-card .amount {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.4rem;
+      color: var(--navy);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+
+    /* The small "$" superscript before the number */
+    .price-card .amount sup {
+      font-family: 'Barlow', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      vertical-align: super; /* raises it like a superscript character */
+    }
+
+    /* The description label below each price */
+    .price-card .desc {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      line-height: 1.35;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* FEATURED card variant (the $90 full registration).
+       Applied by adding "featured" to class="price-card featured".
+       These rules OVERRIDE the normal .price-card rules above
+       for just that one card. */
+    .price-card.featured {
+      background: var(--navy); /* dark background to make it stand out */
+      border-color: var(--gold);
+    }
+    .price-card.featured .amount { color: var(--gold-light); }
+    .price-card.featured .desc   { color: rgba(255,255,255,0.65); }
+
+
+    /* ════════════════════════════════════════════════════════════
+       INFO BOXES — Two side-by-side informational boxes.
+       Left: "Non-Golfers Welcome"   Right: "Benefits Area 52"
+       On small screens they stack vertically (@media rule below).
+       ════════════════════════════════════════════════════════════ */
+
+    /* Two-column grid */
+    .info-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr; /* two equal-width columns */
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    /* MEDIA QUERY: CSS's version of "if screen width < 520px then..."
+       On small phones, change to a single column (boxes stack vertically).
+       This is how CSS makes layouts responsive/mobile-friendly. */
+    @media (max-width: 520px) {
+      .info-row { grid-template-columns: 1fr; }
+    }
+
+    /* Individual info box */
+    .info-box {
+      background: var(--white);
+      border: 1px solid #d0d8e4;
+      border-left: 4px solid var(--sky); /* thick colored left stripe = accent */
+      border-radius: 6px;
+      padding: 1.1rem 1.25rem;
+      font-size: 0.93rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* The bold label at the top of each box ("NON-GOLFERS WELCOME") */
+    .info-box strong {
+      color: var(--navy);
+      display: block;      /* forces it onto its own line */
+      margin-bottom: 0.3rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+
+    /* ════════════════════════════════════════════════════════════
+       TEAM NOTICE BOX — Dark navy box with team entry instructions.
+       The ⛳ emoji before the text is added by CSS (::before pseudo)
+       so you don't have to type it in the HTML.
+       TO REMOVE EMOJI: delete the .team-notice::before block.
+       TO CHANGE BOX BACKGROUND: edit `background` below.
+       ════════════════════════════════════════════════════════════ */
+    .team-notice {
+      background: var(--navy-mid);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      color: rgba(255,255,255,0.85); /* slightly off-white text */
+      font-size: 0.97rem;
+      line-height: 1.65;
+      margin-bottom: 2rem;
+    }
+
+    /* Inserts the golf flag emoji automatically before the text */
+    .team-notice::before {
+      content: '⛳ ';
+    }
+
+
+    /* ════════════════════════════════════════════════════════════
+       CALL-TO-ACTION (CTA) SECTION — The "Click Here" button area.
+       White box with gold border containing the entry form button.
+       ════════════════════════════════════════════════════════════ */
+    .cta-section {
+      text-align: center;
+      padding: 2rem;
+      background: var(--white);
+      border-radius: 10px;
+      border: 2px solid var(--gold); /* gold border makes it pop */
+    }
+
+    .cta-section p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+    }
+
+    /* The button — actually an <a> (anchor/link) tag styled like a button.
+       text-decoration: none removes the underline links normally have.
+       TO CHANGE WHERE IT LINKS: find href="dry-open-entry.html" in the HTML
+       body below and update the filename or full URL. */
+    .cta-btn {
+      display: inline-block; /* allows padding/width on a link tag */
+      background: var(--gold);
+      color: var(--navy);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none; /* removes default link underline */
+      padding: 0.85rem 2.5rem;
+      border-radius: 4px;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    /* Hover: button gets slightly lighter and lifts up 1px */
+    .cta-btn:hover {
+      background: var(--gold-light);
+      transform: translateY(-1px); /* moves 1px upward */
+    }
+
+    /* Active (when clicked): button snaps back down */
+    .cta-btn:active { transform: translateY(0); }
+
+
+    /* ════════════════════════════════════════════════════════════
+       FOOTER — Dark bar at the very bottom of the page.
+       ════════════════════════════════════════════════════════════ */
+    footer {
+      background: var(--navy);
+      color: rgba(255,255,255,0.45); /* faint white text */
+      text-align: center;
+      font-size: 0.8rem;
+      padding: 1.25rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* Clickable email link in the footer */
+    footer a {
+      color: var(--gold);
+      text-decoration: none; /* no underline */
+    }
+
+  </style>
+</head>
+
+
+<!-- ============================================================
+     BODY — Everything the user sees, top to bottom.
+     Elements appear on screen in the ORDER they are written here.
+     ============================================================ -->
+<body>
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       HEADER BLOCK
+       Dark navy banner: golf balls, badge, big title, deadline.
+       <header> is a semantic HTML5 tag — it tells browsers and
+       screen readers "this is the page header." It behaves
+       exactly like a <div> visually.
+       ══════════════════════════════════════════════════════════ -->
+  <header class="header">
+
+    <!-- Three decorative golf balls (drawn by CSS, no image files needed).
+         TO REMOVE: delete this entire <div class="golf-balls"> block. -->
+    <div class="golf-balls">
+      <div class="golf-ball"></div>
+      <div class="golf-ball"></div>
+      <div class="golf-ball"></div>
+    </div>
+
+    <!-- Small gold badge above the title.
+         TO CHANGE TEXT: edit the words between the div tags. -->
+    <div class="event-tag">Annual Hope North Golf Event </div>
+
+    <!-- Main page title. Uses h1 (heading level 1 — most important heading).
+         The word OPEN is inside a <span> tag — span is an invisible
+         inline wrapper that lets CSS target just that word for gold coloring.
+         <br> = line break, like pressing Enter in Word.
+         TO CHANGE: edit "DRY", "OPEN", or "GOLF EVENT" directly. -->
+    <h1>2026 DRY OPEN</h1>
+
+    <!-- Subtitle below the main title. -->
+    <p class="subhead">4-person Scramble &nbsp;·&nbsp; Dinner &amp; Open Meeting &nbsp;·&nbsp; Hawley Golf Club</p>
+    <!-- NOTE: &nbsp; = non-breaking space (adds extra space around the ·)
+               &amp;  = the & character (must be written this way in HTML text) -->
+
+    <!-- Deadline warning box.
+         ⚠ is a standard Unicode warning symbol — you can delete it if preferred.
+         TO CHANGE THE DATE: edit "July 29" below. -->
+    <div class="deadline-banner">⚠ Payment must be received before registration deadline: July 29</div>
+
+  </header>
+  <!-- END HEADER -->
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       SCHEDULE STRIP
+       The medium-blue bar showing the event day timeline.
+       Times are wrapped in <span> tags so CSS colors them gold.
+       TO CHANGE TIMES OR LABELS: edit the text below.
+       | is just a vertical bar character for visual separation.
+       ══════════════════════════════════════════════════════════ -->
+  <div class="schedule-strip">
+    <p>Friday, August 7, 2026 &nbsp;|&nbsp; <span>11:30–12:30 pm</span> Check In &nbsp;|&nbsp; <span>12:30 pm SHARP</span> — Shotgun Start</p>
+    <p><span>5:00–7:00 pm</span> Dinner &amp; Speaker Meeting</p>
+  </div>
+  <!-- END SCHEDULE STRIP -->
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       MAIN CONTENT AREA
+       <main> is a semantic HTML5 tag (like <header>) that marks
+       the primary content of the page. Styled by .main CSS class.
+       ══════════════════════════════════════════════════════════ -->
+  <main class="main">
+
+
+    <!-- ── PRICING CARDS ───────────────────────────────────────
+         Four registration cost boxes in a responsive grid.
+         The grid automatically adjusts columns based on screen width.
+
+         TO ADD A NEW PRICE TIER:
+           Copy one <div class="price-card">...</div> block,
+           paste it inside .pricing-grid, and update the number/text.
+
+         TO REMOVE A CARD: delete one of the price-card div blocks.
+
+         The FIRST card has class="price-card featured" which applies
+         the dark navy background to make it stand out as the main option. -->
+    <div class="pricing-grid">
+
+      <!-- Card 1: Full Registration — dark background "featured" style -->
+      <div class="price-card featured">
+        <!-- <sup> makes the "$" raised like a superscript -->
+        <div class="amount"><sup>$</sup>90</div>
+        <div class="desc">Full Registration<br>(Golf, Cart, Meal, Prizes)</div>
+      </div>
+
+      <!-- Card 2: Hawley Member with own cart -->
+      <div class="price-card">
+        <div class="amount"><sup>$</sup>30</div>
+        <div class="desc">Hawley GC Member<br>w/ Own Cart</div>
+      </div>
+
+      <!-- Card 3: Hawley Member with cart rental -->
+      <div class="price-card">
+        <div class="amount"><sup>$</sup>50</div>
+        <div class="desc">Hawley GC Member<br>w/ Cart Rental</div>
+      </div>
+
+      <!-- Card 4: Non-golfer meal only -->
+      <div class="price-card">
+        <div class="amount"><sup>$</sup>20</div>
+        <div class="desc">Non-Golfer<br>Meal Only</div>
+      </div>
+
+    </div>
+    <!-- END PRICING CARDS -->
+
+
+    <!-- ── INFO BOXES ──────────────────────────────────────────
+         Two side-by-side informational boxes.
+         On mobile (< 520px wide) they stack vertically.
+         <strong> makes text bold AND is targeted by CSS for styling. -->
+    <div class="info-row">
+
+      <!-- Left info box -->
+      <div class="info-box">
+        <strong>Non-Golfers Welcome</strong>
+        Join us for the open meeting and meal at 5:00 pm. Please register so the dining room staff can plan the meal count.
+      </div>
+
+      <!-- Right info box -->
+      <div class="info-box">
+        <strong>Benefits Area 52</strong>
+        All revenue generated from this event will be donated to Area 52. Your participation makes a difference — thank you!
+      </div>
+
+    </div>
+    <!-- END INFO BOXES -->
+
+
+    <!-- ── TEAM NOTICE ─────────────────────────────────────────
+         Dark navy box with team/solo entry instructions.
+         The ⛳ emoji is prepended automatically by CSS (::before).
+         TO CHANGE TEXT: edit the sentence between the div tags.
+         TO REMOVE THE EMOJI: delete .team-notice::before in CSS. -->
+    <div class="team-notice">
+      If you have a 4-person team, please pay for the entire team. If you do not have a team, enter yourself and we will put a team together for you.
+    </div>
+
+
+    <!-- ── CALL TO ACTION (ENTRY FORM BUTTON) ──────────────────
+         White box with gold border containing the "Click Here" button.
+
+         The button is an <a> (anchor/hyperlink) tag.
+           href="dry-open-entry.html" — the relative path to the entry form.
+           "Relative" means: look for dry-open-entry.html in the SAME FOLDER
+           as this file. Both files must be uploaded to the same folder on
+           your web host (Netlify, GitHub Pages, etc.).
+
+         If you ever host the entry form at a full URL like:
+           https://yoursite.netlify.app/dry-open-entry.html
+         you can put that full URL in the href instead. -->
+    <div class="cta-section">
+      <p>Ready to register? Fill out the entry form and send it in with your payment.</p>
+      <a href="dry-open-entry.html" class="cta-btn">Click Here for Entry Form →</a>
+    </div>
+    <!-- END CTA -->
+
+
+  </main>
+  <!-- END MAIN CONTENT -->
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       FOOTER
+       Dark bar at the bottom. Contains event info and email link.
+       mailto: links open the user's default email app when clicked.
+       TO CHANGE THE CONTACT EMAIL: edit greg.bjerke@gmail.com below.
+       ══════════════════════════════════════════════════════════ -->
+  <footer>
+    Dry Open Golf Event &nbsp;·&nbsp; Hawley Golf Club &nbsp;·&nbsp; Friday, August 7, 2026 &nbsp;·&nbsp; Questions? <a href="mailto:greg.bjerke@gmail.com">greg.bjerke@gmail.com</a>
+  </footer>
+  <!-- END FOOTER -->
+
+
+</body>
+</html>
