@@ -302,6 +302,129 @@
       border-radius: 3px;
     }
 
+        /* ════════════════════════════════════════════════════════════
+       ACCESS INFO STRIP
+       The dark strip between the header and schedule bar.
+       Shows the QR code instruction and the direct URL.
+       Sits directly below the header, above the schedule strip.
+
+       TO CHANGE BACKGROUND COLOR: edit background below.
+       TO CHANGE TEXT: find class="access-strip" in the HTML body.
+       ════════════════════════════════════════════════════════════ */
+    .access-strip {
+      background: var(--navy-mid);   /* slightly lighter than the header navy */
+      padding: 1.1rem 1.5rem;
+      text-align: center;
+      border-top: 1px solid rgba(201,168,76,0.25); /* faint gold top rule */
+      border-bottom: 1px solid rgba(201,168,76,0.25); /* faint gold bottom rule */
+    }
+
+    /* "ACCESS This information on your phone or computer..." heading line */
+    .access-strip .access-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+
+    /* The two option lines ("with these two options:") */
+    .access-strip .access-intro {
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 0.75rem;
+    }
+
+    /* Main layout: QR code on the LEFT, divider in MIDDLE, URL on RIGHT.
+       Uses flex row on desktop, stacks vertically on phones.
+       align-items: center vertically centers all three columns. */
+    .access-options {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;       /* wraps to a second line on phones */
+      gap: 1.25rem 2.5rem;   /* vertical gap / horizontal gap */
+    }
+
+    /* Each column (QR side / URL side) */
+    .access-option {
+      display: flex;
+      flex-direction: column;  /* stacks QR image above its label */
+      align-items: center;
+      gap: 0.4rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.75);
+    }
+
+    /* The icon/bullet before text options — gold colored */
+    .access-option .opt-icon {
+      color: var(--gold-light);
+      font-size: 1rem;
+    }
+
+    /* The clickable URL link — styled to be visible on dark background.
+       text-decoration: underline makes it clear it's clickable.
+       word-break: break-all allows the URL to wrap on narrow screens. */
+    .access-strip a {
+      color: var(--gold-light);
+      text-decoration: underline;
+      text-underline-offset: 3px;  /* gap between text and underline */
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.92rem;
+      word-break: break-all;       /* prevents URL from overflowing on phones */
+      transition: color 0.2s;
+    }
+    .access-strip a:hover { color: var(--white); }
+
+    /* ── QR CODE IMAGE inside the access strip ─────────────────
+       The QR code is displayed inline next to the URL option.
+       Wrapped in a white rounded box so it stands out on the dark background.
+
+       TO RESIZE: change width and height in .access-qr-img below.
+         Minimum 120px to remain scannable on screen.
+         150px is comfortable for desktop; phones will zoom to scan.
+       TO REPLACE THE QR IMAGE: see the <img> tag in the HTML body.
+         Follow the same base64 replacement steps as the Venmo QR. */
+    .access-qr-wrap {
+      background: var(--white);      /* white background makes QR scannable */
+      border-radius: 8px;
+      padding: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .access-qr-img {
+      width: 130px;
+      height: 130px;
+      display: block;
+    }
+
+    /* Label below the QR code image */
+    .access-qr-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-top: 0.4rem;
+      text-align: center;
+    }
+
+    /* "— OR —" divider between the two options */
+    .access-or {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.1em;
+    }
+
 
     /* ════════════════════════════════════════════════════════════
        SCHEDULE STRIP — Medium-blue bar with the day's timeline.
