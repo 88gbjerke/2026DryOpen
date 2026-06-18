@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  FILE: dry-open-entry.html
+  PURPOSE: Page 2 — The registration entry form.
+           Linked from dry-open.html via the "Click Here" button.
+           When submitted, opens the user's email app with all
+           form data pre-filled, addressed to 88gbjerke88@gmail.com.
+
+  PAGE ORDER (top to bottom):
+    1. Team Contact Person
+    2. Team Members & Registration Type
+    3. Payment Instructions (with embedded Venmo QR code)
+    4. Submit Button
+
+  HOW THE VENMO QR CODE IS EMBEDDED:
+  ────────────────────────────────────
+  The QR code image is embedded directly in this HTML file as a
+  base64-encoded string. This means NO separate image file is needed.
+  The image is stored inside the <img src="data:image/png;base64,...">
+  attribute. It will display correctly even without an internet
+  connection or any image files in the same folder.
+
+  HOW THE EMAIL SUBMISSION WORKS:
+  ────────────────────────────────
+  When the user clicks "Send Entry Form", the submitForm() JavaScript
+  function reads all fields, builds a mailto: link, and opens the
+  user's default email app pre-filled with the form data.
+  ============================================================
+-->
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dry Open — Entry Form</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── MASTER COLOR PALETTE ───────────────────────────────────
+       Change hex values here to restyle the entire page.
+       --navy       = dark navy (header, footer, table header)
+       --blue       = medium blue (schedule bar on page 1)
+       --sky        = bright blue (focus states, links, Venmo handle)
+       --gold       = warm amber (accents, button, borders)
+       --gold-light = lighter gold (hover states)
+       --border     = light blue-gray (input/card borders)        */
+    :root {
+      --navy:       #0d1f35;
+      --navy-mid:   #162d4a;
+      --blue:       #1a4a7a;
+      --sky:        #2e7ec4;
+      --gold:       #e8a020;
+      --gold-light: #f5c050;
+      --white:      #ffffff;
+      --off-white:  #f4f6f9;
+      --text:       #1a1a2e;
+      --muted:      #4a5568;
+      --border:     #c8d4e4;
+    }
+
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: var(--off-white);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       HEADER
+       ════════════════════════════════════════════════════════════ */
+    .header {
+      background: var(--navy);
+      padding: 1.75rem 1.5rem 1.5rem;
+      text-align: center;
+      position: relative;
+    }
+    /* Gold shimmer line at the bottom of the header */
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+    }
+    /* "← Back to Event Info" link — faint white, turns gold on hover */
+    .back-link {
+      display: inline-block;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.82rem;
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--gold-light); }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 7vw, 3.5rem);
+      color: var(--white);
+      letter-spacing: 0.06em;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    h1 span { color: var(--gold); }
+
+    .header-sub {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       MAIN CONTENT WRAPPER
+       max-width limits width on large monitors; margin:0 auto centers it.
+       ════════════════════════════════════════════════════════════ */
+    .main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       FORM SECTION CARDS
+       Each of the three sections (Contact, Players, Payment) is
+       a white card with a subtle border. The section heading has
+       a colored top border as an accent stripe.
+
+       TO CHANGE ACCENT COLOR: edit border-top color per section below.
+       ════════════════════════════════════════════════════════════ */
+    .form-section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Section heading — "TEAM CONTACT PERSON", "TEAM MEMBERS", etc.
+       border-top gives each section a colored stripe at the top.
+       TO CHANGE STRIPE COLOR per section: see .contact-section,
+       .players-section, .payment-section overrides below. */
+    .form-section h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--navy);
+      margin-bottom: 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Each section card gets its own top accent color:
+       Contact = sky blue, Players = navy, Payment = gold */
+    .contact-section  { border-top: 4px solid var(--sky); }
+    .players-section  { border-top: 4px solid var(--navy); }
+    .payment-section  { border-top: 4px solid var(--gold); }
+
+
+    /* ════════════════════════════════════════════════════════════
+       FORM FIELD LAYOUT
+       .field-row = two fields side by side (Name | Phone)
+       .field-full = one field spanning full width
+       ════════════════════════════════════════════════════════════ */
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    /* On phones under 500px, stack fields vertically */
+    @media (max-width: 500px) {
+      .field-row { grid-template-columns: 1fr; }
+    }
+    .field-full { margin-bottom: 10px; }
+
+    /* Label text above each field — small, uppercase, gray */
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    /* ── ALL INPUT FIELDS ───────────────────────────────────────
+       Applies to: text, email, tel inputs, textarea, and select.
+       All fields share the same look for visual consistency.
+       TO CHANGE FIELD STYLE: edit these properties.
+       focus state: border turns blue, background turns white.   */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 0.55rem 0.75rem;
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: var(--off-white);
+      transition: border-color 0.2s, background 0.2s;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--sky);
+      background: var(--white);
+    }
+
+
+    /* ════════════════════════════════════════════════════════════
+       PLAYER TABLE — 4 player rows with name + registration type.
+       overflow-x: auto on the wrapper enables horizontal scroll
+       on narrow phone screens so the table doesn't break layout.
+       ════════════════════════════════════════════════════════════ */
+    .player-table-wrap { overflow-x: auto; margin-bottom: 10px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      min-width: 560px; /* triggers horizontal scroll on phones */
+    }
+
+    /* Dark navy header row */
+    thead tr { background: var(--navy); color: var(--white); }
+    thead th {
+      padding: 0.6rem 0.6rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-align: center;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+    }
+    thead th:first-child { text-align: left; }
+    /* Gold text for the price column headers */
+    .price-col { color: var(--gold-light); }
+
+    /* Body rows separated by light borders */
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody td { padding: 6px 4px; vertical-align: middle; }
+    tbody td:first-child { padding-left: 2px; }
+
+    /* Player name input inside the table */
+    tbody input[type="text"] {
+      padding: 0.4rem 0.5rem;
+      font-size: 0.88rem;
+      background: #fff;
+    }
+
+    /* Radio button cell — centered */
+    .reg-radio {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .reg-radio input[type="radio"] {
+      width: 16px; height: 16px;
+      cursor: pointer;
+      accent-color: var(--sky); /* blue radio dot when selected */
+    }
+
+    /* Per-player calculated total cell */
+    .total-cell {
+      font-weight: 700;
+      color: var(--navy);
+      text-align: center;
+      min-width: 60px;
+      font-size: 0.95rem;
+    }
+
+    /* Grand total footer row */
+    .grand-total-row { background: var(--off-white); }
+    .grand-total-row td {
+      padding: 0.65rem 0.5rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--navy);
+    }
+    .grand-total-row .grand-num {
+      font-size: 1.2rem;
+      color: var(--sky);
+      text-align: center;
+    }
+
+
+    /* ════════════════════════════════════════════════════════════
+       PAYMENT SECTION — Third card on the page.
+       Contains: deadline warning, two-column layout with
+       Venmo QR code on the left and check/cash info on the right.
+       ════════════════════════════════════════════════════════════ */
+
+    /* Yellow warning box at the top of the payment section */
+    .payment-notice {
+      background: #fff8e6;
+      border: 1px solid var(--gold);
+      border-radius: 5px;
+      padding: 0.65rem 1rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #7a4f00;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Two-column layout: QR code on left, check/cash on right.
+       On phones, stacks to a single column. */
+    .payment-grid {
+      display: grid;
+      grid-template-columns: auto 1fr; /* left col sizes to QR image width */
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 500px) {
+      .payment-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── VENMO QR CODE COLUMN ───────────────────────────────────
+       The left column containing the QR code image and Venmo label.
+
+       HOW THE QR CODE IMAGE WORKS:
+       The image src is a base64-encoded data URI — the entire image
+       is stored as a text string directly inside the HTML file.
+       Format: src="data:image/png;base64,/9j/4AAQ..."
+       This means NO separate image file is needed. The QR code will
+       display correctly even if you rename or move this HTML file,
+       as long as you keep the full HTML file intact.
+
+       TO UPDATE THE QR CODE IMAGE:
+         1. Get the new QR code as a PNG file
+         2. Go to base64encode.org (or similar free tool)
+         3. Upload the PNG and copy the base64 output
+         4. Replace the long string after "base64," in the src below
+         5. Keep the "data:image/png;base64," prefix exactly as-is  */
+    .venmo-col {
+      text-align: center;
+    }
+    .venmo-qr {
+      width: 160px;          /* display size — does not affect QR scan quality */
+      height: 160px;
+      border-radius: 8px;
+      border: 2px solid #e0e8f4;
+      display: block;
+      margin: 0 auto 0.5rem;
+    }
+    /* The blue "venmo" label text below the QR code */
+    .venmo-label {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #3d95ce;        /* Venmo's brand blue color */
+      font-style: italic;
+      letter-spacing: 0.02em;
+    }
+    /* The @HopeNorthAA handle below the venmo label */
+    .venmo-handle {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--sky);
+      margin-top: 0.2rem;
+    }
+    /* Small instruction text below the handle */
+    .venmo-note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+      line-height: 1.4;
+    }
+
+    /* ── CHECK / CASH COLUMN ────────────────────────────────────
+       The right column with mailing address and OR divider. */
+    .check-col {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+    /* "OR" divider between the two payment methods */
+    .or-divider {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+    /* Bold label: "CHECK OR CASH" */
+    .check-col strong {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--navy);
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+    /* Area 52 italic note at the bottom */
+    .area-note {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed var(--border);
+      font-style: italic;
+    }
+
+
+    /* ════════════════════════════════════════════════════════════
+       SUBMIT BUTTON SECTION — Gold-bordered box with send button.
+       ════════════════════════════════════════════════════════════ */
+    .submit-section {
+      text-align: center;
+      padding: 1.5rem;
+      background: var(--white);
+      border: 2px solid var(--gold);
+      border-radius: 10px;
+    }
+    .submit-section p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+    /* The submit button — <button> tag styled as a large gold button.
+       onclick="submitForm()" calls the JavaScript function below. */
+    .submit-btn {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--navy);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: none;
+      padding: 0.85rem 2.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .submit-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .submit-btn:active { transform: translateY(0); }
+
+    /* ── PRINT FALLBACK BUTTON ──────────────────────────────────
+       Secondary "print the form" link shown under the gold
+       "Send Entry Form" button. Styled navy so it reads as the
+       backup option. white-space: normal lets the long label wrap
+       onto multiple lines on narrow screens.
+       onclick="printForm()" calls the JavaScript function below. */
+    .print-btn {
+      display: inline-block;
+      background: var(--navy);
+      color: var(--white);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border: 1px solid var(--navy);
+      padding: 0.7rem 1.75rem;
+      margin-top: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      max-width: 100%;
+      white-space: normal;
+      line-height: 1.3;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .print-btn:hover { background: var(--navy-mid); transform: translateY(-1px); }
+    .print-btn:active { transform: translateY(0); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy);
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      font-size: 0.78rem;
+      padding: 1.1rem;
+      letter-spacing: 0.05em;
+    }
+    footer a { color: var(--gold); text-decoration: none; }
+
+  </style>
+</head>
+
+
+<body>
+
+  <!-- ══════════════════════════════════════════════════════════
+       HEADER
+       Back link, page title, and subtitle.
+       Both files (dry-open.html and dry-open-entry.html) must be
+       in the same folder for the back link to work.
+       ══════════════════════════════════════════════════════════ -->
+  <header class="header">
+    <a href="dry-open.html" class="back-link">← Back to Event Info</a>
+    <h1>DRY <span>OPEN</span> — Entry Form</h1>
+    <p class="header-sub">Hawley Golf Club &nbsp;·&nbsp; Friday, July 31, 2026</p>
+  </header>
+
+
+  <main class="main">
+
+
+    <!-- ══════════════════════════════════════════════════════════
+         SECTION 1 — TEAM CONTACT PERSON
+         Fields: Name, Phone, Email, Payment Method (dropdown).
+         Notes field has been removed per request.
+
+         Each field has:
+           <label for="id"> — the visible label text
+           <input id="id">  — the input box
+         The "for" and "id" must match — this links them together
+         so clicking the label focuses the input (accessibility).
+
+         TO ADD A FIELD: copy a .field-full block, give it a new id,
+         and read it in submitForm() in the JavaScript below.
+         ══════════════════════════════════════════════════════════ -->
+    <div class="form-section contact-section">
+      <h2>Team Contact Person</h2>
+
+      <!-- Two fields side by side: Name on the left, Phone on the right -->
+      <div class="field-row">
+        <div>
+          <label for="contact-name">Name</label>
+          <input type="text" id="contact-name" placeholder="Full name" />
+        </div>
+        <div>
+          <label for="contact-phone">Phone</label>
+          <input type="tel" id="contact-phone" placeholder="(xxx) xxx-xxxx" />
+          <!-- type="tel" shows a phone number keypad on mobile devices -->
+        </div>
+      </div>
+
+      <!-- Full-width email field -->
+      <div class="field-full">
+        <label for="contact-email">Email</label>
+        <input type="email" id="contact-email" placeholder="email@example.com" />
+        <!-- type="email" validates format and shows email keyboard on phones -->
+      </div>
+
+      <!-- Full-width payment method dropdown.
+           The value="" first option is a placeholder — JS detects
+           whether the user made a real selection.
+           TO ADD A PAYMENT OPTION: add another <option> line. -->
+      <div class="field-full">
+        <label for="payment-method">Payment Method</label>
+        <select id="payment-method">
+          <option value="">— Select —</option>
+          <option>Venmo (@HopeNorthAA)</option>
+          <option>Check</option>
+          <option>Cash</option>
+        </select>
+      </div>
+
+    </div>
+    <!-- END SECTION 1 -->
+
+
+    <!-- ══════════════════════════════════════════════════════════
+         SECTION 2 — TEAM MEMBERS & REGISTRATION TYPE
+         The 4-player table. Rows are built by buildRows() in JS.
+         Each row has:
+           - A name text input
+           - One radio button per registration type (only one selectable)
+           - An auto-calculated total cell (updated by updateTotals())
+         The footer row shows the running grand total.
+         ══════════════════════════════════════════════════════════ -->
+    <div class="form-section players-section">
+      <h2>Team Members &amp; Registration Type</h2>
+
+      <p style="font-size:0.83rem; color:var(--muted); margin-bottom:0.9rem;">
+        If you don't have a full team, enter yourself — we'll form a team for you.
+        Select one registration type per player.
+      </p>
+
+      <!-- overflow-x:auto wrapper — horizontal scroll on narrow phones -->
+      <div class="player-table-wrap">
+        <table id="player-table">
+
+          <!-- COLUMN HEADERS -->
+          <thead>
+            <tr>
+              <th style="width:30%">Player Name</th>
+              <!-- class="price-col" colors header text gold -->
+              <th class="price-col">Full Reg<br><small>$92</small></th>
+              <th class="price-col">Hawley Member<br>Own Cart<br><small>$32</small></th>
+              <th class="price-col">Hawley Member<br>Cart Rental<br><small>$52</small></th>
+              <th class="price-col">Meal &amp;<br>Meeting<br><small>$20</small></th>
+              <th>Total</th>
+            </tr>
+          </thead>
+
+          <!-- PLAYER ROWS — populated by buildRows() JavaScript below -->
+          <tbody id="player-rows">
+            <!-- JS inserts 4 rows here on page load -->
+          </tbody>
+
+          <!-- GRAND TOTAL ROW -->
+          <tfoot>
+            <tr class="grand-total-row">
+              <!-- colspan="5" makes this cell span 5 columns -->
+              <td colspan="5" style="text-align:right; padding-right:1rem;">Grand Total:</td>
+              <!-- id="grand-total" lets updateTotals() update this value -->
+              <td class="grand-num" id="grand-total">$0</td>
+            </tr>
+          </tfoot>
+
+        </table>
+      </div>
+    </div>
+    <!-- END SECTION 2 -->
+
+
+    <!-- ══════════════════════════════════════════════════════════
+         SECTION 3 — PAYMENT INSTRUCTIONS
+         Contains:
+           - Yellow deadline warning
+           - Two-column layout:
+               LEFT:  Venmo QR code + @HopeNorthAA + instructions
+               RIGHT: OR divider + Check/Cash mailing address
+           - Area 52 donation note at the bottom
+
+         THE VENMO QR CODE:
+         The <img> tag below has a very long src="data:image/png;base64,..."
+         attribute. This is the entire QR code image stored as text
+         inside the HTML file. No separate image file is needed.
+
+         TO REPLACE THE QR CODE:
+           1. Get your new QR image as a PNG
+           2. Visit base64encode.org, upload the PNG, copy the output
+           3. In the <img> tag below, replace everything AFTER "base64,"
+              with your new base64 string (keep the prefix intact)
+         ══════════════════════════════════════════════════════════ -->
+    <div class="form-section payment-section">
+      <h2>Payment Instructions</h2>
+
+      <!-- Yellow warning — payment must come before form submission -->
+      <div class="payment-notice">
+        ⚠ Payment must be received before entry form is accepted. &nbsp; Registration deadline: July 24.
+      </div>
+
+      <!-- Two-column grid: QR code left, check/cash right -->
+      <div class="payment-grid">
+
+        <!-- LEFT COLUMN: Venmo QR code -->
+        <div class="venmo-col">
+
+          <!-- THE VENMO QR CODE IMAGE
+               src= uses a base64 data URI — the image is embedded
+               directly in the HTML as a long text string.
+               alt= is the accessibility description (screen readers).
+               TO RESIZE THE QR: change width and height in .venmo-qr CSS above.
+               TO REPLACE: swap out the base64 string after "base64,"  -->
+          <img
+            class="venmo-qr"
+            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            alt="Venmo QR code for @HopeNorthAA"
+          />
+
+          <!-- "venmo" brand-style label below the QR code -->
+          <div class="venmo-label">venmo</div>
+
+          <!-- The Venmo account handle -->
+          <div class="venmo-handle">@HopeNorthAA</div>
+
+          <!-- Instruction note -->
+          <div class="venmo-note">
+            Scan QR code or search<br>@HopeNorthAA in Venmo.<br>
+            Include your team name in the note.
+          </div>
+
+        </div>
+        <!-- END VENMO COLUMN -->
+
+        <!-- RIGHT COLUMN: OR divider + check/cash instructions -->
+        <div class="check-col">
+
+          <!-- "OR" in large Bebas Neue font as a visual divider -->
+          <div class="or-divider">— OR —</div>
+
+          <strong>Check or Cash</strong>
+          Payable to:<br>
+          <!-- <em> = italic text -->
+          <em>"North Fargo Big Book Study"</em><br><br>
+          Mail to:<br>
+          Greg Bjerke<br>
+          2973 Peterson Pkwy N<br>
+          Fargo, ND 58102
+
+        </div>
+        <!-- END CHECK/CASH COLUMN -->
+
+      </div>
+      <!-- END PAYMENT GRID -->
+
+      <!-- Area 52 note + contact email — sits below the two-column grid.
+           Italic, separated by a dashed top border. -->
+      <div class="area-note">
+        All revenue generated will be donated to Area 52. &nbsp;·&nbsp;
+        Questions: <a href="mailto:88gbjerke88@gmail.com" style="color:var(--sky)">88gbjerke88@gmail.com</a>
+      </div>
+
+    </div>
+    <!-- END SECTION 3 -->
+
+
+    <!-- ══════════════════════════════════════════════════════════
+         SUBMIT BUTTON
+         Clicking calls submitForm() which reads all fields,
+         formats a plain-text email body, and opens the user's
+         email app via a mailto: link to 88gbjerke88@gmail.com.
+         ══════════════════════════════════════════════════════════ -->
+    <div class="submit-section">
+      <p>
+        Clicking the button below will open your email app with this form pre-filled.<br>
+        Review the email, then click <strong>Send</strong>.
+      </p>
+      <button class="submit-btn" onclick="submitForm()">📧 &nbsp;Send Entry Form</button>
+
+      <!-- PRINT FALLBACK — backup option if the email won't send.
+           Calls printForm() (see JavaScript below), which opens a
+           clean printable page and triggers the browser Print dialog. -->
+      <br>
+      <button class="print-btn" onclick="printForm()">🖨 &nbsp;If email send fails, click here to print form for mailing or hand delivery</button>
+    </div>
+
+  </main>
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════════════════════════ -->
+  <footer>
+    Dry Open Golf Event &nbsp;·&nbsp; Hawley Golf Club &nbsp;·&nbsp; July 31, 2026 &nbsp;·&nbsp;
+    <a href="mailto:88gbjerke88@gmail.com">88gbjerke88@gmail.com</a>
+  </footer>
+
+
+  <!-- ============================================================
+       JAVASCRIPT
+       Three functions handle all interactivity on this page:
+         1. buildRows()    — builds the 4 player rows in the table
+         2. updateTotals() — recalculates totals when radios change
+         3. submitForm()   — reads fields and opens email app
+         4. printForm()    — backup to print form for mailing
+         5. buildFormText() — shared function to build form output
+
+       Placed at the bottom of <body> so all HTML elements exist
+       before JS tries to reference them by id.
+       ============================================================ -->
+  <script>
+
+    // ── REGISTRATION TYPE DATA ─────────────────────────────────
+    // Parallel arrays: PRICES[0] corresponds to LABELS[0], etc.
+    // Index 0: Full Reg $92
+    // Index 1: Hawley Member Own Cart $32
+    // Index 2: Hawley Member Cart Rental $52
+    // Index 3: Meal & Meeting $20
+    //
+    // TO CHANGE PRICES: update PRICES array values.
+    // TO CHANGE LABEL TEXT IN EMAIL: update LABELS array values.
+    // Keep both arrays in the same order!
+    const PRICES = [92, 32, 52, 20];
+    const LABELS = [
+      'Full Registration ($92)',
+      'Hawley Member – Own Cart ($32)',
+      'Hawley Member – Cart Rental ($52)',
+      'Meal & Meeting Only ($20)'
+    ];
+
+
+    // ── buildRows() ───────────────────────────────────────────
+    // Dynamically creates the 4 player rows in the table.
+    // Called once at page load (see last line of this script).
+    //
+    // For each player 1–4, creates a <tr> with:
+    //   - A name text input (id="p1-name", "p2-name", etc.)
+    //   - One <td> per price with a radio button (name="p1-type", etc.)
+    //   - A total cell (id="p1-total") that shows "$90" etc. after selection
+    //
+    // Radio buttons sharing the same name attribute are mutually
+    // exclusive — selecting one automatically deselects the others.
+    // onchange="updateTotals()" triggers recalculation on every change.
+    function buildRows() {
+      const tbody = document.getElementById('player-rows');
+
+      for (let i = 1; i <= 4; i++) {
+        const tr = document.createElement('tr');
+
+        // Template literal builds the row's HTML.
+        // PRICES.map() generates one radio <td> per price.
+        // .join('') combines the array of strings into one string.
+        tr.innerHTML = `
+          <td>
+            <input type="text" id="p${i}-name" placeholder="Player ${i} name" />
+          </td>
+          ${PRICES.map((price) => `
+            <td>
+              <div class="reg-radio">
+                <input
+                  type="radio"
+                  name="p${i}-type"
+                  value="${price}"
+                  onchange="updateTotals()"
+                />
+              </div>
+            </td>
+          `).join('')}
+          <td class="total-cell" id="p${i}-total">—</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+
+    // ── updateTotals() ────────────────────────────────────────
+    // Called every time any radio button is clicked.
+    // Reads the selected radio for each player, updates their
+    // individual total cell, and updates the grand total footer.
+    function updateTotals() {
+      let grandTotal = 0;
+
+      for (let i = 1; i <= 4; i++) {
+        // :checked pseudo-class finds the selected radio for player i
+        const selected = document.querySelector(`input[name="p${i}-type"]:checked`);
+        const totalCell = document.getElementById(`p${i}-total`);
+
+        if (selected) {
+          const amount = parseInt(selected.value); // "90" → 90
+          grandTotal += amount;
+          totalCell.textContent = '$' + amount;
+        } else {
+          totalCell.textContent = '—'; // no selection yet
+        }
+      }
+
+      // Update the grand total display in the table footer
+      document.getElementById('grand-total').textContent =
+        grandTotal > 0 ? '$' + grandTotal : '$0';
+    }
+
+
+    // ── buildFormText() ────────────────────────────────────────
+    // Reads every field and returns the formatted plain-text entry
+    // summary plus the contact name. It is shared by BOTH submitForm()
+    // (which emails it) and printForm() (which prints it), so the two
+    // outputs always stay identical.
+    //
+    // TO ADD A NEW FIELD TO THE OUTPUT:
+    //   1. Add an <input id="my-field"> in the HTML above
+    //   2. Read it here: const myVal = document.getElementById('my-field').value.trim()
+    //   3. Add a line for it in the text template below
+    function buildFormText() {
+
+      // Read contact person fields.
+      // .trim() removes leading/trailing whitespace.
+      // || '(not provided)' = fallback if the field was left blank.
+      const contactName  = document.getElementById('contact-name').value.trim()  || '(not provided)';
+      const contactPhone = document.getElementById('contact-phone').value.trim() || '(not provided)';
+      const contactEmail = document.getElementById('contact-email').value.trim() || '(not provided)';
+      const payMethod    = document.getElementById('payment-method').value        || '(not selected)';
+
+      // Build the players text block — one entry per player
+      let playersText = '';
+      let grandTotal  = 0;
+
+      for (let i = 1; i <= 4; i++) {
+        const name   = document.getElementById(`p${i}-name`).value.trim() || '(blank)';
+        const sel    = document.querySelector(`input[name="p${i}-type"]:checked`);
+        // Look up the full label using indexOf to find the matching price
+        const label  = sel ? LABELS[ PRICES.indexOf(parseInt(sel.value)) ] : '(not selected)';
+        const amount = sel ? '$' + sel.value : '$0';
+
+        if (sel) grandTotal += parseInt(sel.value);
+        playersText += `  Player ${i}: ${name}\n    Registration: ${label} — ${amount}\n\n`;
+      }
+
+      const body =
+`DRY OPEN GOLF EVENT — ENTRY FORM
+Hawley Golf Club · Friday, July 31, 2026
+===========================================
+
+TEAM CONTACT PERSON
+  Name:           ${contactName}
+  Phone:          ${contactPhone}
+  Email:          ${contactEmail}
+  Payment Method: ${payMethod}
+
+TEAM PLAYERS
+${playersText}
+GRAND TOTAL DUE: $${grandTotal}
+
+---
+Submitted via the Dry Open online entry form.
+`;
+
+      return { contactName, body };
+    }
+
+
+    // ── submitForm() ──────────────────────────────────────────
+    // Reads all form values, builds a formatted email body,
+    // and opens the user's email app via a mailto: URL.
+    //
+    // TO CHANGE THE RECIPIENT EMAIL:
+    //   Find "mailto:88gbjerke88@gmail.com" below and replace
+    //   with any address.
+    function submitForm() {
+      // Get the shared, formatted entry text.
+      const { contactName, body } = buildFormText();
+
+      // Encode subject line and body for URL safety (spaces → %20, etc.)
+      const subject = encodeURIComponent('Dry Open Golf Entry — ' + contactName);
+
+      // Navigate to the mailto: URL — this opens the email client.
+      // Format: mailto:TO?subject=SUBJECT&body=BODY
+      // TO CHANGE RECIPIENT: replace 88gbjerke88@gmail.com
+      window.location.href = `mailto:88gbjerke88@gmail.com?subject=${subject}&body=${encodeURIComponent(body)}`;
+    }
+
+
+    // ── printForm() ───────────────────────────────────────────
+    // Backup for when the email won't send (no email app set up,
+    // mailto: blocked, etc.). Builds the SAME entry text, opens a
+    // clean printable page in a new window, and triggers the
+    // browser's Print dialog so the user can print the form and
+    // mail it or hand-deliver it.
+    function printForm() {
+      const { contactName, body } = buildFormText();
+
+      // Open a blank new window/tab to print from.
+      const win = window.open('', '_blank');
+
+      // If a pop-up blocker stopped the new window, tell the user.
+      if (!win) {
+        alert('Please allow pop-ups for this page, then click the print link again.');
+        return;
+      }
+
+      // Escape < > & so the text can't break the printable HTML.
+      const safeBody = body
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Write a minimal printable page. white-space: pre-wrap keeps
+      // the line breaks and spacing of the plain-text layout.
+      win.document.write(
+        '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+        '<title>Dry Open Golf Entry — ' + contactName + '</title>' +
+        '<style>body{font-family:Menlo,Consolas,monospace;white-space:pre-wrap;' +
+        'padding:32px;font-size:14px;line-height:1.55;color:#000;}' +
+        '.note{white-space:normal;margin-top:28px;border-top:1px dashed #999;' +
+        'padding-top:14px;font-family:Arial,sans-serif;font-size:13px;color:#333;}</style>' +
+        '</head><body>' + safeBody +
+        '<div class="note">If you are mailing or hand-delivering this form, ' +
+        'please include your payment. Mail to / contact: 88gbjerke88@gmail.com</div>' +
+        '</body></html>'
+      );
+      win.document.close();
+      win.focus();
+
+      // Wait briefly so the new page finishes rendering, then print.
+      setTimeout(function () { win.print(); }, 300);
+    }
+
+
+    // ── PAGE INITIALIZATION ────────────────────────────────────
+    // Runs immediately when the page loads.
+    // Calls buildRows() to populate the player table.
+    buildRows();
+
+  </script>
+
+</body>
+</html>
