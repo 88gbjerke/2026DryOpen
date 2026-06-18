@@ -456,6 +456,34 @@
     .submit-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
     .submit-btn:active { transform: translateY(0); }
 
+/* ── PRINT FALLBACK BUTTON ──────────────────────────────────
+       Secondary "print the form" link shown under the gold
+       "Send Entry Form" button. Styled navy so it reads as the
+       backup option. white-space: normal lets the long label wrap
+       onto multiple lines on narrow screens.
+       onclick="printForm()" calls the JavaScript function below. */
+    .print-btn {
+      display: inline-block;
+      background: var(--navy);
+      color: var(--white);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border: 1px solid var(--navy);
+      padding: 0.7rem 1.75rem;
+      margin-top: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      max-width: 100%;
+      white-space: normal;
+      line-height: 1.3;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .print-btn:hover { background: var(--navy-mid); transform: translateY(-1px); }
+    .print-btn:active { transform: translateY(0); }
+    
     /* ── FOOTER ── */
     footer {
       background: var(--navy);
@@ -706,9 +734,14 @@
         Review the email, then click <strong>Send</strong>.
       </p>
       <button class="submit-btn" onclick="submitForm()">📧 &nbsp;Send Entry Form</button>
+
+      <!-- PRINT FALLBACK — backup option if the email won't send.
+           Calls printForm() (see JavaScript below), which opens a
+           clean printable page and triggers the browser Print dialog. -->
+      <br>
+      <button class="print-btn" onclick="printForm()">🖨 &nbsp;If you prefer to print this form for mailing or hand delivery or if the email link fails</button>
     </div>
-
-
+      
   </main>
 
 
@@ -882,8 +915,22 @@ GRAND TOTAL DUE: $${grandTotal}
 
 ---
 Submitted via the Dry Open online entry form.
-`
-      );
+
+       return { contactName, body };
+    }
+
+    function submitForm() {
+      // Get the shared, formatted entry text.
+      const { contactName, body } = buildFormText();
+
+      // Encode subject line and body for URL safety (spaces → %20, etc.)
+      const subject = encodeURIComponent('Dry Open Golf Entry — ' + contactName);
+
+      // Navigate to the mailto: URL — this opens the email client.
+      // Format: mailto:TO?subject=SUBJECT&body=BODY
+      // TO CHANGE RECIPIENT: replace 88gbjerke88@gmail.com
+      window.location.href = `mailto:88gbjerke88@gmail.com?subject=${subject}&body=${encodeURIComponent(body)}`;
+    }
 
       // Navigate to the mailto: URL — this opens the email client.
       // Format: mailto:TO?subject=SUBJECT&body=BODY
@@ -891,7 +938,51 @@ Submitted via the Dry Open online entry form.
       window.location.href = `mailto:88gbjerke88@gmail.com?subject=${subject}&body=${body}`;
     }
 
+// ── printForm() ───────────────────────────────────────────
+    // Backup for when the email won't send (no email app set up,
+    // mailto: blocked, etc.). Builds the SAME entry text, opens a
+    // clean printable page in a new window, and triggers the
+    // browser's Print dialog so the user can print the form and
+    // mail it or hand-deliver it.
+    function printForm() {
+      const { contactName, body } = buildFormText();
 
+      // Open a blank new window/tab to print from.
+      const win = window.open('', '_blank');
+
+      // If a pop-up blocker stopped the new window, tell the user.
+      if (!win) {
+        alert('Please allow pop-ups for this page, then click the print link again.');
+        return;
+      }
+
+      // Escape < > & so the text can't break the printable HTML.
+      const safeBody = body
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Write a minimal printable page. white-space: pre-wrap keeps
+      // the line breaks and spacing of the plain-text layout.
+      win.document.write(
+        '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+        '<title>Dry Open Golf Entry — ' + contactName + '</title>' +
+        '<style>body{font-family:Menlo,Consolas,monospace;white-space:pre-wrap;' +
+        'padding:32px;font-size:14px;line-height:1.55;color:#000;}' +
+        '.note{white-space:normal;margin-top:28px;border-top:1px dashed #999;' +
+        'padding-top:14px;font-family:Arial,sans-serif;font-size:13px;color:#333;}</style>' +
+        '</head><body>' + safeBody +
+        '<div class="note">If you are mailing or hand-delivering this form, ' +
+        'please include your payment. Mail to / contact: 88gbjerke88@gmail.com</div>' +
+        '</body></html>'
+      );
+      win.document.close();
+      win.focus();
+
+      // Wait briefly so the new page finishes rendering, then print.
+      setTimeout(function () { win.print(); }, 300);
+    }
+    
     // ── PAGE INITIALIZATION ────────────────────────────────────
     // Runs immediately when the page loads.
     // Calls buildRows() to populate the player table.
