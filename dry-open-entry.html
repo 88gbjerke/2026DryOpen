@@ -13,13 +13,12 @@
     3. Payment Instructions (with embedded Venmo QR code)
     4. Submit Button
 
-  HOW THE VENMO QR CODE IS EMBEDDED:
+  HOW THE VENMO QR CODE WORKS:
   ────────────────────────────────────
-  The QR code image is embedded directly in this HTML file as a
-  base64-encoded string. This means NO separate image file is needed.
-  The image is stored inside the <img src="data:image/png;base64,...">
-  attribute. It will display correctly even without an internet
-  connection or any image files in the same folder.
+  The QR code is the image file venmo-qr.png, which lives in the SAME
+  folder as this HTML file. The <img src="venmo-qr.png"> tag loads it.
+  Keep venmo-qr.png next to this file when moving or copying it, or the
+  QR code will not appear.
 
   HOW THE EMAIL SUBMISSION WORKS:
   ────────────────────────────────
@@ -637,15 +636,16 @@
            - Area 52 donation note at the bottom
 
          THE VENMO QR CODE:
-         The <img> tag below has a very long src="data:image/png;base64,..."
-         attribute. This is the entire QR code image stored as text
-         inside the HTML file. No separate image file is needed.
+         The <img> tag below loads the QR image from a separate file,
+         venmo-qr.png, which must stay in the SAME folder as this HTML
+         file. (This is more reliable than embedding the image, which
+         some preview tools failed to display.)
 
          TO REPLACE THE QR CODE:
            1. Get your new QR image as a PNG
-           2. Visit base64encode.org, upload the PNG, copy the output
-           3. In the <img> tag below, replace everything AFTER "base64,"
-              with your new base64 string (keep the prefix intact)
+           2. Save it into this folder as venmo-qr.png (overwrite the
+              existing one), OR give it a new name and update the
+              src="venmo-qr.png" in the <img> tag below to match
          ══════════════════════════════════════════════════════════ -->
     <div class="form-section payment-section">
       <h2>Payment Instructions</h2>
@@ -662,14 +662,13 @@
         <div class="venmo-col">
 
           <!-- THE VENMO QR CODE IMAGE
-               src= uses a base64 data URI — the image is embedded
-               directly in the HTML as a long text string.
+               src= points to venmo-qr.png in this same folder.
                alt= is the accessibility description (screen readers).
                TO RESIZE THE QR: change width and height in .venmo-qr CSS above.
-               TO REPLACE: swap out the base64 string after "base64,"  -->
+               TO REPLACE: replace the venmo-qr.png file in this folder.  -->
           <img
             class="venmo-qr"
-            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            src="venmo-qr.png"
             alt="Venmo QR code for @HopeNorthAA"
           />
 
@@ -740,6 +739,7 @@
       <button class="print-btn" onclick="printForm()">🖨 &nbsp;If email send fails, click here to print form for mailing or hand delivery</button>
     </div>
 
+
   </main>
 
 
@@ -758,8 +758,6 @@
          1. buildRows()    — builds the 4 player rows in the table
          2. updateTotals() — recalculates totals when radios change
          3. submitForm()   — reads fields and opens email app
-         4. printForm()    — backup to print form for mailing
-         5. buildFormText() — shared function to build form output
 
        Placed at the bottom of <body> so all HTML elements exist
        before JS tries to reference them by id.
@@ -856,11 +854,22 @@
     }
 
 
-    // ── buildFormText() ────────────────────────────────────────
-    // Reads every field and returns the formatted plain-text entry
-    // summary plus the contact name. It is shared by BOTH submitForm()
-    // (which emails it) and printForm() (which prints it), so the two
-    // outputs always stay identical.
+    // ── submitForm() ──────────────────────────────────────────
+    // Reads all form values, builds a formatted email body,
+    // and opens the user's email app via a mailto: URL.
+    //
+    // TO CHANGE THE RECIPIENT EMAIL:
+    //   Find "mailto:88gbjerke88@gmail.com" near the bottom of
+    //   this function and replace with any address.
+    //
+    // TO ADD A NEW FIELD TO THE EMAIL:
+    //   1. Add an <input id="my-field"> in the HTML above
+    //   2. Read it: const myVal = document.getElementById('my-field').value.trim()
+    //   3. Add a line for it in the email body template below
+    // buildFormText() reads every field and returns the formatted
+    // plain-text entry summary plus the contact name. It is shared by
+    // BOTH submitForm() (which emails it) and printForm() (which prints
+    // it), so the two outputs always stay identical.
     //
     // TO ADD A NEW FIELD TO THE OUTPUT:
     //   1. Add an <input id="my-field"> in the HTML above
@@ -914,13 +923,6 @@ Submitted via the Dry Open online entry form.
     }
 
 
-    // ── submitForm() ──────────────────────────────────────────
-    // Reads all form values, builds a formatted email body,
-    // and opens the user's email app via a mailto: URL.
-    //
-    // TO CHANGE THE RECIPIENT EMAIL:
-    //   Find "mailto:88gbjerke88@gmail.com" below and replace
-    //   with any address.
     function submitForm() {
       // Get the shared, formatted entry text.
       const { contactName, body } = buildFormText();
